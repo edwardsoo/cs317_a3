@@ -1,0 +1,71 @@
+Checking for TA handin script /home/c/cs317/bin/handin ...
+Running TA handin script ...
+/------------------------------------------------------------------------------\
+Calculating your score...
+Submission count: 2
+STUDENT INFO
+Name..................: Soo, Edward
+Student number........: 71680094
+Ugrad account.........: b0e7
+
+PARTNER INFO
+** no partner **
+
+Trying to compile your code...
+rm -rf ip_forward.o ip_route.o ip_forward_main.o ip_route_main.o ip_forward ip_route
+gcc -Wall -g -Wextra -Wno-unused-parameter    -c -o ip_forward.o ip_forward.c
+gcc -Wall -g -Wextra -Wno-unused-parameter    -c -o ip_forward_main.o ip_forward_main.c
+gcc   ip_forward.o ip_forward_main.o   -o ip_forward
+gcc -Wall -g -Wextra -Wno-unused-parameter    -c -o ip_route.o ip_route.c
+gcc -Wall -g -Wextra -Wno-unused-parameter    -c -o ip_route_main.o ip_route_main.c
+gcc   ip_route.o ip_route_main.o   -o ip_route
+Compilation completed successfully.
+
+*** Tests for part 1 ***
+
+  IP in table 1...................... [ OK ]
+  IP not in table 1.................. [ OK ]
+  Longest prefix 1................... [ OK ]
+  Ordering 1......................... [ OK ]
+  Ordering 2......................... [ OK ]
+  Ordering 3......................... [ OK ]
+  Ordering 4......................... [ OK ]
+  Packet longer prefix............... [ OK ]
+  Packet shorter prefix.............. [ OK ]
+  Packet to unreachable.............. [FAIL] ** Some files incorrect
+  Simple table....................... [ OK ]
+  Update unreachable................. [ OK ]
+  Update unreachable silent.......... [FAIL] ** Some files incorrect
+Result: 11 out of 13 correct (33.8/40)
+
+*** Tests for part 2 ***
+
+  All unreachable 1.................. [ OK ]
+  Double update...................... [ OK ]
+  Lowest becomes unreachable......... [ OK ]
+  Lowest metric higher choose other.. [ OK ]
+  Lowest metric higher still min..... [ OK ]
+  Lowest metric lower................ [ OK ]
+  New higher metric.................. [ OK ]
+  New lower metric................... [ OK ]
+  Nonmin becomes lower............... [ OK ]
+  Nonmin nic higher.................. [ OK ]
+  Num nics updates................... [ OK ]
+  Resurrect unreachable to min....... [ OK ]
+  Resurrect unreachable to nonmin.... [ OK ]
+  Same metric higher id.............. [ OK ]
+  Same metric lower id............... [ OK ]
+  Single update...................... [ OK ]
+  Update other lower chosen.......... [ OK ]
+  Update other still higher.......... [ OK ]
+Result: 18 out of 18 correct (60.0/60)
+
+PRELIMINARY SCORE...: 93.8/100
+
+DISCLAIMER: This score is subject to change based on additional tests 
+and review by the teaching staff.
+
+
+\------------------------------------------------------------------------------/
+
+*** Handin process completed. ***
