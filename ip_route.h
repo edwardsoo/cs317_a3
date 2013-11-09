@@ -10,6 +10,11 @@
 
 #include "capacity.h"
 
+#define min(a,b) \
+  ({ __typeof__ (a) _a = (a); \
+   __typeof__ (b) _b = (b); \
+   _a < _b ? _a : _b; })
+
 typedef struct subnet {
   uint32_t address;
   uint8_t size;

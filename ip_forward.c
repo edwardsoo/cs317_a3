@@ -104,7 +104,7 @@ void destroy_router(router_state state) {
 radix_node* 
 radix_insert(radix_node *tree, uint8_t bits, uint32_t key, int value) {
   radix_node *new_tree;
-  uint8_t bits_left, num_match;
+  uint8_t bits_rmd, num_match;
 
   // calculate number
   if (tree) {
@@ -142,37 +142,37 @@ radix_insert(radix_node *tree, uint8_t bits, uint32_t key, int value) {
   } 
   // This node's key is a prefix to the new node's key
   else if (tree->bits == num_match && bits > num_match) {
-    bits_left = bits - num_match;
-    if (NTH_LSB(key, bits_left)) {
-      tree->right = radix_insert(tree->right, bits_left, 
-          key & TRAILING_ONES_32(bits_left), value);
+    bits_rmd = bits - num_match;
+    if (NTH_LSB(key, bits_rmd)) {
+      tree->right = radix_insert(tree->right, bits_rmd, 
+          key & TRAILING_ONES_32(bits_rmd), value);
     } else {
-      tree->left = radix_insert(tree->left, bits_left,
-          key & TRAILING_ONES_32(bits_left), value);
+      tree->left = radix_insert(tree->left, bits_rmd,
+          key & TRAILING_ONES_32(bits_rmd), value);
     }
   }
   // new node's key is a prefix to this node's key
   else if (tree->bits > num_match && bits == num_match) {
-    bits_left = tree->bits - num_match;
+    bits_rmd = tree->bits - num_match;
     new_tree = (radix_node*) malloc(sizeof(radix_node));
-    new_tree->bits = bits_left;
-    new_tree->key = tree->key & TRAILING_ONES_32(bits_left);
+    new_tree->bits = bits_rmd;
+    new_tree->key = tree->key & TRAILING_ONES_32(bits_rmd);
     new_tree->left = tree->left;
     new_tree->right = tree->right;
     new_tree->has_value = tree->has_value;
     new_tree->value = tree->value;
 
-    if (NTH_LSB(tree->key, bits_left)) {
+    if (NTH_LSB(tree->key, bits_rmd)) {
       tree->right = new_tree;
       tree->left = NULL;
-      // tree->right = radix_insert(tree->right, bits_left, 
-      //     tree->key & TRAILING_ONES_32(bits_left), tree->value);
+      // tree->right = radix_insert(tree->right, bits_rmd, 
+      //     tree->key & TRAILING_ONES_32(bits_rmd), tree->value);
     } else {
       tree->right = NULL;
       tree->left = new_tree;
 
-      // tree->left = radix_insert(tree->left, bits_left,
-      //     tree->key & TRAILING_ONES_32(bits_left), tree->value);
+      // tree->left = radix_insert(tree->left, bits_rmd,
+      //     tree->key & TRAILING_ONES_32(bits_rmd), tree->value);
     }
     tree->bits = bits;
     tree->value = value;
@@ -181,7 +181,7 @@ radix_insert(radix_node *tree, uint8_t bits, uint32_t key, int value) {
   }
   // The leading bits match is a prefix to both this node and the new node
   else {
-    bits_left = bits - num_match;
+    bits_rmd = bits - num_match;
     new_tree = (radix_node*) malloc(sizeof(radix_node));
     new_tree->bits = tree->bits - num_match;
     new_tree->key = tree->key & TRAILING_ONES_32(tree->bits - num_match);
@@ -190,15 +190,15 @@ radix_insert(radix_node *tree, uint8_t bits, uint32_t key, int value) {
     new_tree->has_value = tree->has_value;
     new_tree->value = tree->value;
 
-    if (NTH_LSB(key, bits_left)) {
-      tree->right = radix_insert(NULL, bits_left, 
-          key & TRAILING_ONES_32(bits_left), value);
-      bits_left = tree->bits - num_match;
+    if (NTH_LSB(key, bits_rmd)) {
+      tree->right = radix_insert(NULL, bits_rmd, 
+          key & TRAILING_ONES_32(bits_rmd), value);
+      bits_rmd = tree->bits - num_match;
       tree->left = new_tree;
     } else {
-      tree->left= radix_insert(NULL, bits_left, 
-          key & TRAILING_ONES_32(bits_left), value);
-      bits_left = tree->bits - num_match;
+      tree->left= radix_insert(NULL, bits_rmd, 
+          key & TRAILING_ONES_32(bits_rmd), value);
+      bits_rmd = tree->bits - num_match;
       tree->right = new_tree;
     }
 
@@ -212,30 +212,28 @@ radix_insert(radix_node *tree, uint8_t bits, uint32_t key, int value) {
 }
 
 radix_node* radix_delete(radix_node *tree, uint8_t bits, uint32_t key) {
-  uint8_t num_match, bits_left;
+  uint8_t num_match, bits_rmd;
   radix_node* new_tree;
 
-  //printf("%s\n", str);
-  //printf("delete %u/%u\n", key, bits);
-  //printf("prefix %u/%u\n", tree->key, tree->bits);
-  // traverseTree(tree, 0, 0, 0);
+  printf("delete %u/%u\n", key, bits);
+  printf("prefix %u/%u\n", tree->key, tree->bits);
   if (tree) {
     num_match = num_prefix_match(tree->key, tree->bits, key, bits);
-    bits_left = bits - num_match;
+    bits_rmd = bits - num_match;
   } else {
     return NULL;
   }
 
   // This node's key is only a prefix, try to delete in subtree
-  if (bits && bits_left) {
+  if (bits && bits_rmd) {
 
     // try to delete from subtree first
-    if (NTH_LSB(key, bits_left)) {
-      tree->right = radix_delete(tree->right, bits_left,
-          key & TRAILING_ONES_32(bits_left));
+    if (NTH_LSB(key, bits_rmd)) {
+      tree->right = radix_delete(tree->right, bits_rmd,
+          key & TRAILING_ONES_32(bits_rmd));
     } else {
-      tree->left = radix_delete(tree->left, bits_left,
-          key & TRAILING_ONES_32(bits_left));
+      tree->left = radix_delete(tree->left, bits_rmd,
+          key & TRAILING_ONES_32(bits_rmd));
     }
 
     // Key is prefix of at least two other nodes' keys
@@ -258,7 +256,7 @@ radix_node* radix_delete(radix_node *tree, uint8_t bits, uint32_t key) {
       if (!tree->has_value) {
         tree->right->key += (tree->key << tree->right->bits);
         tree->right->bits += tree->bits;
-        new_tree = tree->left;
+        new_tree = tree->right;
         free(tree);
         return new_tree;
       } else {
@@ -275,7 +273,7 @@ radix_node* radix_delete(radix_node *tree, uint8_t bits, uint32_t key) {
     }
   }
   // This node has the key
-  else if (bits && !bits_left) {
+  else if (bits && !bits_rmd) {
     // Key is prefix of at least two other nodes' keys, cannot delete
     if (tree->left && tree->right) {
       tree->has_value = 0;
@@ -292,7 +290,7 @@ radix_node* radix_delete(radix_node *tree, uint8_t bits, uint32_t key) {
     else if (tree->right) {
       tree->right->key += (tree->key << tree->right->bits);
       tree->right->bits += tree->bits;
-      new_tree = tree->left;
+      new_tree = tree->right;
       free(tree);
       return new_tree;
     }
@@ -306,7 +304,7 @@ radix_node* radix_delete(radix_node *tree, uint8_t bits, uint32_t key) {
 }
 
 int radix_prefix_lookup(radix_node *tree, uint8_t bits, uint32_t key) {
-  uint8_t num_match, bits_left;
+  uint8_t num_match, bits_rmd;
   int value;
 
   if (tree) {
@@ -322,13 +320,13 @@ int radix_prefix_lookup(radix_node *tree, uint8_t bits, uint32_t key) {
   }
   // this node's key is a prefix to the search key 
   else if (num_match == tree->bits && bits > num_match) {
-    bits_left = bits - num_match;
-    if (NTH_LSB(key, bits_left)) {
-      value = radix_prefix_lookup(tree->right, bits_left,
-          key & TRAILING_ONES_32(bits_left));
+    bits_rmd = bits - num_match;
+    if (NTH_LSB(key, bits_rmd)) {
+      value = radix_prefix_lookup(tree->right, bits_rmd,
+          key & TRAILING_ONES_32(bits_rmd));
     } else {
-      value = radix_prefix_lookup(tree->left, bits_left,
-          key & TRAILING_ONES_32(bits_left));
+      value = radix_prefix_lookup(tree->left, bits_rmd,
+          key & TRAILING_ONES_32(bits_rmd));
     }
     if (value != -1) {
       return value;
@@ -345,7 +343,7 @@ uint8_t num_prefix_match(uint32_t key_1, uint8_t bits_1,
   uint32_t s_key_1, s_key_2, xnor;
   uint8_t mask_len = 16;
   uint8_t match = 0;
-  uint8_t bits_left = 32;
+  uint8_t bits_rmd = 32;
 
   s_key_1 = (key_1 << (32-bits_1));
   s_key_2 = (key_2 << (32-bits_2));
@@ -355,11 +353,11 @@ uint8_t num_prefix_match(uint32_t key_1, uint8_t bits_1,
   xnor = xnor & LEADING_ONES_32(min(bits_1, bits_2));
   // printf("key1 %u, key2 %u, xnor %u\n", s_key_1, s_key_2, xnor);
 
-  while (mask_len > 0 && bits_left > 0) {
+  while (mask_len > 0 && bits_rmd > 0) {
     if ((xnor & LEADING_ONES_32(mask_len)) == LEADING_ONES_32(mask_len)) {
       match += mask_len;
       xnor = xnor << mask_len;
-      bits_left -= mask_len;
+      bits_rmd -= mask_len;
 
     } else {
       mask_len /= 2;

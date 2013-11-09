@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     perror("Could not open file for writing");
     return 2;
   }
-  
+ 
   state = initialize_router();
   
   while(fgets(line, MAXLINE, stdin)) {
@@ -67,6 +67,7 @@ int main(int argc, char *argv[]) {
     }
     else {
       
+      traverseTree(state->tree, 0, 0, 0);
       fprintf(stderr, "Invalid input line: %s\n", line);
     }
   }

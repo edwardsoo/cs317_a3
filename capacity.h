@@ -10,10 +10,7 @@
 #ifndef _CAPACITY_H_
 #define _CAPACITY_H_
 
-#define min(a,b) \
-  ({ __typeof__ (a) _a = (a); \
-   __typeof__ (b) _b = (b); \
-   _a < _b ? _a : _b; })
+#define WHERE() printf("LINE %u\n", __LINE__);
 
 // Number of network interface cards
 #define NUM_NICS 16

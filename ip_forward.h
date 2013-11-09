@@ -10,6 +10,10 @@
 
 #include "capacity.h"
 
+#define min(a,b) \
+  ({ __typeof__ (a) _a = (a); \
+   __typeof__ (b) _b = (b); \
+   _a < _b ? _a : _b; })
 #define NTH_LSB(X,N) ((X>>(N-1))&1)
 #define TRAILING_ONES_32(X) (0xFFFFFFFF >> (32-X))
 #define LEADING_ONES_32(X) (0xFFFFFFFF << (32-X))
