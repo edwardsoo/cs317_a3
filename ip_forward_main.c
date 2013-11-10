@@ -66,8 +66,7 @@ int main(int argc, char *argv[]) {
       printf("%s", line);
     }
     else {
-      
-      traverseTree(state->tree, 0, 0, 0);
+      // traverseTree(state->tree, 0, 0, 0);
       fprintf(stderr, "Invalid input line: %s\n", line);
     }
   }

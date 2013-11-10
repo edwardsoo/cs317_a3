@@ -123,20 +123,27 @@ radix_insert(radix_node *tree, uint8_t bits, uint32_t key, int value) {
 
   // no match
   if (!bits_match) {
-    radix_node* new_tree = (radix_node*) malloc(sizeof(radix_node));
-    new_tree->bits = 0;
-    new_tree->key = 0;
-    new_tree->has_value = 0;
-    new_tree->value = 0;
-
-    if (NTH_LSB(key, bits)) {
-      new_tree->right = radix_insert(NULL, bits, key, value);
-      new_tree->left = tree;
+    if (NTH_MSB(key, 1) && tree->right) {
+      tree->right =  radix_insert(tree->right, bits, key, value);
+      return tree;
+    } else if (!NTH_MSB(key, 1) && tree->left) {
+      tree->left =  radix_insert(tree->left, bits, key, value);
+      return tree;
     } else {
-      new_tree->left = radix_insert(NULL, bits, key, value);
-      new_tree->right = tree;
+      radix_node* new_tree = (radix_node*) malloc(sizeof(radix_node));
+      new_tree->bits = 0;
+      new_tree->key = 0;
+      new_tree->has_value = 0;
+      new_tree->value = 0;
+      if (NTH_MSB(key, 1)) {
+        new_tree->right = radix_insert(NULL, bits, key, value);
+        new_tree->left = tree;
+      } else {
+        new_tree->left = radix_insert(NULL, bits, key, value);
+        new_tree->right = tree;
+      }
+      return new_tree;
     }
-    return new_tree;
   }
 
   // Same key
@@ -353,13 +360,11 @@ uint8_t num_prefix_match(uint32_t key_1, uint8_t bits_1,
   uint8_t bits_rmd = 32;
 
   xnor = ~(key_1 ^ key_2);
-
   // Zero out the fluke matching bits
   xnor = xnor & LEADING_ONES_32(min(bits_1, bits_2));
-  // printf("key1 %u, key2 %u, xnor %u\n", s_key_1, s_key_2, xnor);
 
   while (mask_len > 0 && bits_rmd > 0) {
-    if ((xnor & LEADING_ONES_32(mask_len)) == LEADING_ONES_32(mask_len)) {
+    if ((xnor & LEADING_ONES_32(mask_len)) == (uint32_t) LEADING_ONES_32(mask_len)) {
       match += mask_len;
       xnor = xnor << mask_len;
       bits_rmd -= mask_len;
@@ -368,8 +373,6 @@ uint8_t num_prefix_match(uint32_t key_1, uint8_t bits_1,
       mask_len /= 2;
     }
   }
-
-  // printf("%u/%u match %u/%u %u bits\n", key_1, bits_1, key_2, bits_2, match);
   return match;
 }
 

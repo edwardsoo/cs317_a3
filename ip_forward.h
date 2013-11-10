@@ -16,8 +16,8 @@
    _a < _b ? _a : _b; })
 #define NTH_LSB(X,N) ((X>>(N-1))&0x00000001)
 #define NTH_MSB(X,N) ((X<<(N-1))&0x80000000)
-#define TRAILING_ONES_32(X) (0xFFFFFFFF >> (32-X))
-#define LEADING_ONES_32(X) (0xFFFFFFFF << (32-X))
+#define TRAILING_ONES_32(X) ((X<sizeof(unsigned)*8) ? ((1U<<X)-1) : (0xFFFFFFFF >> (32-X)))
+#define LEADING_ONES_32(X) ((X<0x20) ? (((1U<<X)-1)<<(32-X)) : (0xFFFFFFFF << (32-X)))
 
 #define FOUND 1
 #define NOT_FOUND 0
