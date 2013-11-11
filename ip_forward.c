@@ -317,25 +317,35 @@ radix_node* radix_delete(radix_node *tree, uint8_t bits, uint32_t key) {
 
 int radix_prefix_lookup(radix_node *tree, uint8_t bits, uint32_t key, int *value) {
   int rc;
-  uint32_t and = tree->key & key;
-  uint32_t shifted = key << tree->bits;
+  uint32_t xor;
+  uint32_t shifted;
 
   if (!tree) {
     return NOT_FOUND;
   }
+  xor = (tree->key ^ key);
+  //printf("tree 0x%x\n", tree);
+  //printf("tree->left 0x%x\n", tree->left);
+  //printf("tree %u %u key %u %u xor %u\n", tree->key, tree->bits, key, bits, xor);
 
   // Found exact match
-  if (and == tree->key && !shifted && tree->value) {
+  if (!xor && tree->bits == bits && tree->value) {
     *value = tree->value;
     return FOUND;
   }
 
+  // this node is not a prefix
+  else if (xor & LEADING_ONES_32(tree->bits) && tree->bits) {
+    return NOT_FOUND;
+  }
+
   // this node's key is a prefix to the search key 
-  else if (shifted) {
+  else {
+    shifted = key << tree->bits;
     if (shifted & 0x80000000) {
       rc = radix_prefix_lookup(tree->right, bits - tree->bits, shifted, value);
     } else {
-      rc = radix_prefix_lookup(tree->left, tree->bits, shifted, value);
+      rc = radix_prefix_lookup(tree->left, bits - tree->bits, shifted, value);
     }
 
     if (rc != FOUND && tree->has_value) {
@@ -345,7 +355,6 @@ int radix_prefix_lookup(radix_node *tree, uint8_t bits, uint32_t key, int *value
       return rc;
     }
   }
-  return NOT_FOUND;
 }
 
 // Return the number of leading bits match
