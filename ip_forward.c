@@ -109,8 +109,17 @@ radix_insert(radix_node *tree, uint8_t bits, uint32_t key, int value) {
   uint8_t bits_rmd, bits_match;
 
   // calculate number
-  if (tree) {
+  if (tree && tree->bits) {
     bits_match = num_prefix_match(tree->key, tree->bits, key, bits);
+  } 
+  // Is at root
+  else if (tree) {
+    if (NTH_MSB(key, 1) && tree->right && tree->bits) {
+      tree->right =  radix_insert(tree->right, bits, key, value);
+    } else if (!NTH_MSB(key, 1) && tree->left) {
+      tree->left =  radix_insert(tree->left, bits, key, value);
+    }
+    return tree;
   } else {
     new_tree = (radix_node*) malloc(sizeof(radix_node));
     new_tree->bits = bits;
@@ -123,13 +132,6 @@ radix_insert(radix_node *tree, uint8_t bits, uint32_t key, int value) {
 
   // no match
   if (!bits_match) {
-    if (NTH_MSB(key, 1) && tree->right) {
-      tree->right =  radix_insert(tree->right, bits, key, value);
-      return tree;
-    } else if (!NTH_MSB(key, 1) && tree->left) {
-      tree->left =  radix_insert(tree->left, bits, key, value);
-      return tree;
-    } else {
       radix_node* new_tree = (radix_node*) malloc(sizeof(radix_node));
       new_tree->bits = 0;
       new_tree->key = 0;
@@ -143,7 +145,6 @@ radix_insert(radix_node *tree, uint8_t bits, uint32_t key, int value) {
         new_tree->right = tree;
       }
       return new_tree;
-    }
   }
 
   // Same key
