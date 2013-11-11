@@ -316,29 +316,26 @@ radix_node* radix_delete(radix_node *tree, uint8_t bits, uint32_t key) {
 }
 
 int radix_prefix_lookup(radix_node *tree, uint8_t bits, uint32_t key, int *value) {
-  uint8_t bits_match, bits_rmd;
   int rc;
+  uint32_t and = tree->key & key;
+  uint32_t shifted = key << tree->bits;
 
-  if (tree) {
-    bits_match = num_prefix_match(tree->key, tree->bits, key, bits);
-  } else {
+  if (!tree) {
     return NOT_FOUND;
   }
 
   // Found exact match
-  if (tree->bits == bits_match && bits == bits_match && tree->has_value) {
+  if (and == tree->key && !shifted && tree->value) {
     *value = tree->value;
     return FOUND;
   }
 
   // this node's key is a prefix to the search key 
-  else if (bits_match == tree->bits && bits > bits_match) {
-    bits_rmd = bits - bits_match;
-
-    if (NTH_MSB(key, bits_match + 1)) {
-      rc = radix_prefix_lookup(tree->right, bits_rmd, key << bits_match, value);
+  else if (shifted) {
+    if (shifted & 0x80000000) {
+      rc = radix_prefix_lookup(tree->right, bits - tree->bits, shifted, value);
     } else {
-      rc = radix_prefix_lookup(tree->left, bits_rmd, key << bits_match, value);
+      rc = radix_prefix_lookup(tree->left, tree->bits, shifted, value);
     }
 
     if (rc != FOUND && tree->has_value) {
@@ -348,7 +345,6 @@ int radix_prefix_lookup(radix_node *tree, uint8_t bits, uint32_t key, int *value
       return rc;
     }
   }
-
   return NOT_FOUND;
 }
 
