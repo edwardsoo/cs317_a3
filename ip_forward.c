@@ -114,7 +114,7 @@ radix_insert(radix_node *tree, uint8_t bits, uint32_t key, int value) {
   } 
   // Is at root
   else if (tree) {
-    if (NTH_MSB(key, 1) && tree->right && tree->bits) {
+    if (NTH_MSB(key, 1) && tree->right) {
       tree->right =  radix_insert(tree->right, bits, key, value);
     } else if (!NTH_MSB(key, 1) && tree->left) {
       tree->left =  radix_insert(tree->left, bits, key, value);
